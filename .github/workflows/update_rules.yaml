@@ -1,0 +1,108 @@
+name: update_rules
+
+on:
+  schedule:
+    - cron: '30 22 * * *' # UTC 22:30，北京时间次日 06:30
+  push:
+    branches: ['main']
+    paths:
+      - 'Rules/direct.list'
+      - 'Rules/proxy.list'
+      - '.github/workflows/update_rules.yaml'
+  workflow_dispatch:
+
+concurrency:
+  group: update-rules-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+
+    steps:
+      - name: checkout latest branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: install mihomo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mihomo_url="$(gh api repos/MetaCubeX/mihomo/releases/latest \
+            --jq '.tag_name as $version | .assets[] | select(.name == ("mihomo-linux-amd64-compatible-" + $version + ".gz")) | .browser_download_url')"
+          if [ -z "$mihomo_url" ]; then
+            echo "Latest stable mihomo release has no Linux amd64 compatible asset" >&2
+            exit 1
+          fi
+          curl --fail --location --retry 3 \
+            "$mihomo_url" \
+            --output "$RUNNER_TEMP/mihomo.gz"
+          gzip -dc "$RUNNER_TEMP/mihomo.gz" > "$RUNNER_TEMP/mihomo"
+          chmod +x "$RUNNER_TEMP/mihomo"
+          "$RUNNER_TEMP/mihomo" -v
+
+      - name: update HaGeZi rules
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: |
+          curl --fail --location --retry 3 \
+            'https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.mini.txt' \
+            --output "$RUNNER_TEMP/hagezi-pro.mini.txt"
+          node - "$RUNNER_TEMP/hagezi-pro.mini.txt" Rules/hagezi-pro.mini.list <<'NODE'
+          const fs = require('node:fs');
+          const [, , input, output] = process.argv;
+          const domains = new Set();
+
+          for (const [index, rawLine] of fs.readFileSync(input, 'utf8').split(/\r?\n/).entries()) {
+            const line = rawLine.trim();
+            if (!line || line.startsWith('!') || line === '[Adblock Plus]') continue;
+
+            // DNS Adblock 的 ||example.com^ 对应 +.example.com（包含子域名）。
+            const match = /^\|\|([a-z0-9_-]+(?:\.[a-z0-9_-]+)*)\^$/i.exec(line);
+            if (!match) {
+              // 不静默忽略例外规则、URL 规则或选项。
+              throw new Error(`Unsupported Adblock rule at line ${index + 1}: ${line}`);
+            }
+            domains.add(`+.${match[1].toLowerCase()}`);
+          }
+
+          if (domains.size === 0) throw new Error('The Adblock source contains no domain rules');
+          fs.writeFileSync(output, `${[...domains].sort().join('\n')}\n`);
+          console.log(`Converted ${domains.size} domain rules to ${output}`);
+          NODE
+          "$RUNNER_TEMP/mihomo" convert-ruleset domain text \
+            Rules/hagezi-pro.mini.list Rules/hagezi-pro.mini.mrs
+          test -s Rules/hagezi-pro.mini.mrs
+
+      - name: convert direct and proxy rules
+        run: |
+          for name in direct proxy; do
+            if ! grep -qE '^[[:space:]]*[^#[:space:]]' "Rules/${name}.list"; then
+              # mihomo 不支持转换空规则集；清除旧产物，避免空列表仍使用旧规则。
+              rm -f -- "Rules/${name}.mrs"
+              echo "Rules/${name}.list is empty; no MRS file generated"
+              continue
+            fi
+            "$RUNNER_TEMP/mihomo" convert-ruleset domain text "Rules/${name}.list" "Rules/${name}.mrs"
+            test -s "Rules/${name}.mrs"
+          done
+
+      - name: commit and push generated rules
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- Rules
+          if git diff --cached --quiet; then
+            echo "no rule changes to commit"
+          else
+            git commit -m "chore: update generated rules"
+            git push
+          fi

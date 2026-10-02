@@ -1,8 +1,8 @@
 /**
- * mihomo配置覆写脚本（精简版）
- * 作者：AIsouler
+ * mihomo配置覆写脚本（修改版）
+ * 原作者：AIsouler
  * 源仓库：https://github.com/AIsouler/MyClash
- * 脚本链接：https://raw.githubusercontent.com/AIsouler/MyClash/main/Script/Script.js
+ * 原脚本链接：https://raw.githubusercontent.com/AIsouler/MyClash/main/Script/Script.js
  * 友情推荐，非常好用、省电且内存占用低的代理软件：https://github.com/appshubcc/Bettbox
  */
 
@@ -22,6 +22,7 @@ const ruleOptionsEnable = {
   自动选择: true, // 是否启用自动选择策略组
 
   // 以下为分流策略配置
+  娱乐: true, // 娱乐服务
   Google: true, // Google服务
   AI: true, // 国外AI服务
   Telegram: true, // Telegram通讯软件
@@ -47,6 +48,10 @@ const ruleOptionsEnable = {
 const prefixRules = [
   // 私有网络直连
   'RULE-SET,private,直连',
+
+  // 自定义
+  'RULE-SET,hagezi,AdBlock',
+  'RULE-SET,direct,直连',
 
   // 国内直连
   'RULE-SET,geolocation-cn,直连',
@@ -96,7 +101,7 @@ const blockForeignQuic = [
 // 直连节点
 const directProxies = [
   {
-    name: '🇨🇳 直连 | 双栈',
+    name: '🇨🇳 直连',
     type: 'direct',
   },
   {
@@ -122,10 +127,10 @@ const directProxies = [
 ];
 
 // 图标 URL 公共前缀
-const iconBaseUrl = 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/';
+const iconBaseUrl = 'https://raw.githubusercontent.com/AIsouler/MyClash/main/Icons/svg/';
 
 // 规则集 URL 公共前缀
-const ruleSetBaseUrl = 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/';
+const ruleSetBaseUrl = 'https://raw.githubusercontent.com/appshubcc/bett-rules/meta/geo/';
 
 // 定义地区策略组
 const regionDefinitions = [
@@ -164,7 +169,7 @@ const rateRegionDefinitions = [
   {
     name: lowRateRegionName,
     regex:
-      /^(?!.*(?:剩|期)).*(?:(?<!\d)0\.[0-5]|(?<=[ \[\(|｜丨∣┃\-‐–—−－﹣])0[*×✕✖⨯⨉x倍])|(?:(?<=[ \[\(|｜丨∣┃\-‐–—−－﹣])[*×✕✖⨯⨉x]0(?=[ \)\]]|倍|$))|^(?!.*(?:客户端|软件)).*下载|低倍|免费|(?<![A-Za-z])free(?![A-Za-z])/i,
+      /^(?!.*(?:剩|期)).*(?:(?<!\d)0\.[0-5]|(?<=[ \[\(|｜丨∣┃\-‐–—−－﹣])0[*×✕✖⨯⨉x倍])|(?:(?<=[ \[\(|｜丨∣┃\-‐–—−－﹣])[*×✕✖⨯⨉x]0(?=[ \)\]]|倍|$))|^(?!.*(?:客户端|软件)).*下载|低倍|免费|实验|(?<![A-Za-z])free(?![A-Za-z])/i,
     icon: `${iconBaseUrl}Available.svg`,
   },
   {
@@ -196,6 +201,11 @@ const ruleProviderCommonIpcidr = {
 const baseRuleProviders = {
   // --- 直连规则集 ---
 
+  direct: {
+    ...ruleProviderCommonDomain,
+    url: `https://raw.githubusercontent.com/haha12358/MyClash/main/Rules/direct.mrs`,
+    path: './ruleset/direct.mrs',
+  },
   private: {
     ...ruleProviderCommonDomain,
     url: `${ruleSetBaseUrl}geosite/private.mrs`,
@@ -328,6 +338,20 @@ const baseGroups = [
 const serviceConfigs = [
   ...baseGroups,
   {
+    name: '娱乐',
+    baseOption: selectBaseOption,
+    providers: {
+      entertainment: {
+        ...ruleProviderCommonDomain,
+        url: `${ruleSetBaseUrl}geosite/category-entertainment.mrs`,
+        path: './ruleset/category-entertainment.mrs',
+        'path-in-bundle': 'geo/geosite/category-entertainment.mrs',
+      },
+    },
+    icon: `${iconBaseUrl}YouTube.svg`,
+    rules: ['RULE-SET,entertainment,娱乐'],
+  },
+  {
     name: 'Google',
     baseOption: selectBaseOption,
     providers: {
@@ -408,15 +432,14 @@ const serviceConfigs = [
     baseOption: selectBaseOption,
     reject: true,
     providers: {
-      adblockmihomolite: {
+      hagezi: {
         ...ruleProviderCommonDomain,
-        url: 'https://fastly.jsdelivr.net/gh/217heidai/adblockfilters@main/rules/adblockmihomolite.mrs',
-        path: './ruleset/adblockmihomolite.mrs',
+        url: 'https://raw.githubusercontent.com/haha12358/MyClash/main/Rules/hagezi-pro.mini.mrs',
+        path: './ruleset/hagezi.mrs',
         'path-in-bundle': 'geo/geosite/category-ads-all.mrs',
       },
     },
     icon: `${iconBaseUrl}AdBlock.svg`,
-    rules: ['RULE-SET,adblockmihomolite,AdBlock'],
   },
 ];
 
@@ -930,9 +953,9 @@ const commonDnsRegex = new RegExp(
 
 // 国内外 DNS 定义
 const chinaDNS = ['223.5.5.5#DIRECT', '119.29.29.29#DIRECT'];
-const foreignDNS = ['https://cloudflare-dns.com/dns-query#默认代理', 'https://dns.google/dns-query#默认代理'];
-const defaultDNS = ['114.114.114.114#DIRECT', 'tls://223.5.5.5#DIRECT', 'https://1.12.12.12/dns-query#DIRECT'];
-const proxyServerDNS = ['114.114.114.114#DIRECT', 'tls://223.5.5.5#DIRECT', 'https://doh.pub/dns-query#DIRECT'];
+const foreignDNS = ['https://dns.google/dns-query#漏网之鱼', 'https://cloudflare-dns.com/dns-query#漏网之鱼'];
+const defaultDNS = ['223.5.5.5#DIRECT', '119.29.29.29#DIRECT'];
+const proxyServerDNS = ['https://dns.alidns.com/dns-query#DIRECT', 'https://doh.pub/dns-query#DIRECT'];
 
 /**
  * hosts 匹配优先级：精确 > +. > . > *（同级按出现顺序）
@@ -1026,7 +1049,7 @@ function applyHostsToProxies(proxies, hosts) {
   return proxies.map((proxy) => {
     if (typeof proxy.server !== 'string') return proxy;
     const server = resolve(proxy.server);
-    return server === proxy.server ? proxy : { ...proxy, server };
+    return server === proxy.server ? proxy : { ...proxy, server, udp: true };
   });
 }
 
@@ -1186,13 +1209,12 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
 
   const dns = {
     enable: true,
-    ipv6: true,
+    ipv6: false,
     'use-hosts': true,
     'cache-algorithm': 'arc',
     'use-system-hosts': true,
     'enhanced-mode': 'fake-ip',
     'fake-ip-range': '198.18.0.1/15',
-    'fake-ip-range6': '2001:2::1/48',
     'fake-ip-filter': ['rule-set:private', 'rule-set:fakeip_filter', 'rule-set:geolocation-cn', ...proxyFakeIpFilter],
     'default-nameserver': defaultDNS,
     'proxy-server-nameserver': proxyServerDNS,
@@ -1202,7 +1224,7 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
     nameserver: foreignDNS,
     'nameserver-policy': {
       'rule-set:private': 'system',
-      'rule-set:douyin': ['system', '180.184.1.1', '180.184.2.2'],
+      'rule-set:douyin': ['180.184.1.1', '180.184.2.2'],
       'rule-set:cn': chinaDNS,
     },
     'direct-nameserver': chinaDNS,
@@ -1210,8 +1232,9 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
   };
 
   const hosts = {
+    'dns.alidns.com': ['223.5.5.5', '223.6.6.6'],
     'doh.pub': ['1.12.12.12', '120.53.53.53'],
-    'cloudflare-dns.com': ['1.1.1.1', '1.0.0.1'],
+    'cloudflare-dns.com': ['104.16.248.249', '104.16.249.249'],
     'dns.google': ['8.8.8.8', '8.8.4.4'],
 
     // 解决谷歌商店无法下载的问题
@@ -1254,7 +1277,7 @@ function main(config) {
   newConfig['hosts'] = hosts;
   newConfig['mixed-port'] = 7890;
   newConfig['allow-lan'] = true;
-  newConfig['ipv6'] = true;
+  newConfig['ipv6'] = false;
   newConfig['mode'] = 'rule';
   newConfig['log-level'] = 'info';
   newConfig['bind-address'] = '*';
@@ -1284,7 +1307,7 @@ function main(config) {
     enable: true,
     stack: 'mips',
     'auto-route': true,
-    'strict-route': true,
+    'strict-route': false,
     'auto-redirect': true,
     'auto-detect-interface': true,
     'dns-hijack': ['any:53', 'tcp://any:53'],
@@ -1302,7 +1325,8 @@ function main(config) {
   newConfig['rule-providers'] = finalRuleProviders;
 
   newConfig['rules'] = [
-    ...prefixRules,
+    // AdBlock 关闭或处于极简模式时不生成 HaGeZi 规则，保留其他前置规则的顺序
+    ...prefixRules.filter((rule) => rule !== 'RULE-SET,hagezi,AdBlock' || finalRuleProviders.hagezi),
     ...(ruleOptionsEnable.屏蔽国外QUIC ? blockForeignQuic : []),
     ...functionalRules,
 
