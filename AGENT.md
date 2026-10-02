@@ -1,18 +1,50 @@
 # AGENT.md
 
-面向在本仓库工作的 AI 助手与维护者，记录**图标统一化处理流程**及其配套约定（含踩过的坑）。
-改动 `Icons/`、`Script/`、`Config/` 里的图标相关内容前请先读本文。
+面向本仓库的 AI 助手与维护者，记录脚本、配置、规则自动更新和图标维护约定。
+先按下方当前约定处理项目变更；图标相关工作另须遵守 §1–§9 的规范和历史处置记录。
 
 - **导航**
 
 | 我要…                     | 去哪                                |
 | ------------------------- | ----------------------------------- |
+| 修改脚本 / 配置 / 规则 | 当前项目维护约定 |
 | 新增 / 替换一个图标       | §3 标准流程，规范看 §1              |
 | 图标在 Flutter 里显示不对 | §2 兼容红线                         |
 | 图标边缘 / 接缝有瑕疵     | §5 共性瑕疵的审查与规整方法         |
 | 动某个具体文件之前        | §4 逐文件处置记录（含"勿回退"清单） |
 | 同步命名 / URL / 引用     | §6 命名与引用                       |
 | 校验与收尾                | §7 校验方法、§8 环境与踩坑          |
+
+---
+
+## 当前项目维护约定（2026-10-02）
+
+### 文件与同步范围
+
+- 本仓库为 `haha12358/MyClash`，上游为 `AIsouler/MyClash`。README 下载链接使用本仓库；文件头保留原作者和原链接，图标仍引用上游素材。
+- `Script/Script.js` 对应 `Config/mihomoConfigLite.yaml`；`Script/mihomoScript.js` 对应 `Config/mihomoConfig.yaml`。修改共用逻辑时同步两份脚本及可对应的静态配置，保留全量版额外服务策略。
+- 当前脚本地区仅包含香港、日本、美国、新加坡；台湾地区已移除。测试元数据和断言须保持一致，不得为满足旧测试恢复已移除功能。静态 Config 目前仍保留台湾策略组，不要把它当作脚本地区定义。
+- 两个版本均启用娱乐分流、自定义直连和 HaGeZi PRO mini 广告规则。规则顺序为私有网络直连 → HaGeZi → 自定义直连 → 国内直连 → 国外 QUIC 拦截 → 娱乐及其他服务 → 兜底；变更优先级时核对脚本和 YAML。
+- 当前默认全局及 DNS `ipv6: false`，无 `fake-ip-range6`，TUN `strict-route: false`；国外 DNS 走“漏网之鱼”，节点解析使用阿里和腾讯 DoH。具体地址以脚本输出为准，不恢复旧版默认值。
+- 低倍率匹配包含“实验”；直连默认节点名为 `🇨🇳 直连`。订阅 hosts 改写节点 server 时同时设 `udp: true`；动态逻辑不能直接照搬到静态 YAML。
+
+### 规则与工作流
+
+- 通用规则集前缀为 `https://raw.githubusercontent.com/appshubcc/bett-rules/meta/geo/`；图标前缀为 `https://raw.githubusercontent.com/AIsouler/MyClash/main/Icons/svg/`。Emby、emos、cn-additional 等独立来源保留其各自 URL。
+- `direct` 指向本仓库 `Rules/direct.mrs`；`hagezi` 指向 `Rules/hagezi-pro.mini.mrs`，本地缓存为 `./ruleset/hagezi.mrs`。不要混淆远端产物名和本地缓存名。
+- `Rules/direct.list`、`Rules/proxy.list` 为 domain 文本源，每行一个域名；`+.example.com` 匹配域名及子域名。只编辑源文件，生成的 MRS 由工作流更新；`proxy.mrs` 尚未接入脚本或配置。
+- `.github/workflows/update_rules.yaml` 每天 UTC 22:30（北京时间次日 06:30）下载 HaGeZi Adblock 源，内嵌转换为排序、去重的 `.list`，再生成 MRS；不拆出独立转换脚本。
+- direct/proxy 源文件推送到 `main` 后自动转换；手动运行更新全部规则。空列表或仅空行、`#` 注释的列表跳过转换并删除旧 MRS；HaGeZi 空规则或不支持的语法应报错，不静默忽略例外规则。
+- mihomo 通过 GitHub Releases `releases/latest` 获取最新正式版及 Linux amd64 compatible 资产，不硬编码版本、不使用预发布版。仅有产物变化时提交，工作流需 `contents: write`。
+- `.github/workflows/format_and_test.yaml` 对 main 推送自动格式化并测试，PR 运行测试。自动提交可能推进远端分支，继续工作前先检查差异并同步，禁止强推覆盖产物。
+
+### 验证与文档
+
+- 脚本变更运行 `npm --prefix Test ci` 和 `node Test/run-tests.js`，确保 Node、ES2020、QuickJS 均执行，不接受依赖缺失导致的跳过。
+- 配置变更解析 YAML（展开锚点），核对规则集、策略引用、DNS 与规则顺序；用本地订阅/规则样本运行 mihomo `-t`，避免以真实订阅进行验证。
+- 工作流变更用 actionlint 检查，并对内嵌转换逻辑验证真实输入、去重、空输入和不支持的规则；格式遵循 `.prettierrc.json`。
+- README 仅说明如何使用：版本选择、下载、导入和必要设置，不写仓库实现、工作流或测试细节。规则与自动更新说明放 `Rules/README.md`，测试用法放 `Test/README.md`。
+- 保留已有图标规范和用户定稿的例外；历史渲染结果和处置记录不因规则配置变更而重写。
 
 ---
 
@@ -23,9 +55,9 @@
 | 原始位图参考                     | `Icons/png/<Name>.png`                                                                                                                                                                                                                                     |
 | 统一化矢量（对外提供的就是这套） | `Icons/svg/<Name>.svg`                                                                                                                                                                                                                                     |
 | 命名                             | PascalCase、无下划线/连字符；png 与 svg **同名一一对应**（当前 37 对）                                                                                                                                                                                     |
-| 引用格式                         | `https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/<Name>.svg`；**JS 脚本里前缀已提为 `iconBaseUrl`**，写成 `` `${iconBaseUrl}<Name>.svg` ``；YAML 不支持变量，仍写全量                                                                       |
-| 引用位置                         | `Script/mihomoScript.js`（42）、`Script/Script.js`（24）、`Config/mihomoConfig.yaml`（34）、`Config/mihomoConfigLite.yaml`（18）（共 118 处）                                                                                                              |
-| 规则集引用                       | 脚本里已提为 `const ruleSetBaseUrl`（`…/gh/appshubcc/bett-rules@meta/geo/`），写成 `` `${ruleSetBaseUrl}geosite/<name>.mrs` ``；`path-in-bundle` 是包内本地路径，与之无关；少数第三方规则集（Emby / emos / adblock / cn-additional）仓库不同，仍写全量 URL |
+| 引用格式                         | `https://raw.githubusercontent.com/AIsouler/MyClash/main/Icons/svg/<Name>.svg`；**JS 脚本里前缀已提为 `iconBaseUrl`**，写成 `` `${iconBaseUrl}<Name>.svg` ``；YAML 不支持变量，仍写全量                                                                       |
+| 引用位置 | 两份 Script 与两份 Config；以文件实际引用为准 |
+| 规则集引用 | 脚本用 `ruleSetBaseUrl`（`https://raw.githubusercontent.com/appshubcc/bett-rules/meta/geo/`）；独立来源见当前维护约定，`path-in-bundle` 为包内路径 |
 | 回归测试                         | `node Test/run-tests.js`（改过脚本必跑，当前 192 项；含 ES2020 语法检查与 QuickJS 实跑 `main()`）                                                                                                                                                          |
 
 ---
@@ -801,14 +833,14 @@ Singapore 实测：`C1 (249.4028, 330.6168) R1 132.9217`（rms 0.72）、`C2 (34
 | paypal (thesvg)     | `PayPal`                  |
 | World_Map           | `WorldMap`                |
 
-- 引用格式（**CDN 前缀固定不变**）：
+- 当前图标引用格式（保留上游素材来源）：
 
 ```txt
-https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/<Name>.svg
+https://raw.githubusercontent.com/AIsouler/MyClash/main/Icons/svg/<Name>.svg
 ```
 
-- 改完必须审计：4 个文件里所有 `fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/(svg|png)/...` 的目标文件都存在，且没有残留的第三方图标 CDN（Koolson / MiToverG422 / lige47）。
-- jsDelivr 走 `@main` 分支，**commit + push 之后**链接才生效。
+- 改完必须审计：4 个文件里所有 `raw.githubusercontent.com/AIsouler/MyClash/main/Icons/(svg|png)/...` 的目标文件都存在，且没有残留的第三方图标 CDN（Koolson / MiToverG422 / lige47）。
+- 图标链接使用上游 `main` 分支。本仓库修改图标不会自动更新上游 Raw 链接；需要发布新素材时按任务要求同步引用。
 - ⚠️ Windows 下仅大小写不同的改名（`fcm.png` → `Fcm.png`）git 可能不记录 → 必要时 `git rm --cached <旧名>` 再 `git add <新名>`，保证 index 里的文件名与 URL 逐字符一致。
 
 ---
@@ -835,7 +867,7 @@ Start-Process -FilePath "<python.exe>" -ArgumentList '-m','http.server','8765','
 
 - ❌ 不要在 PowerShell 里写多行 `python -c "..."`：转义规则不同会让会话卡在 `>>` 续行，之后 sync 命令全被吞（要用 `.py` 文件或新开 async 终端）。
 - ❌ 批量改文件禁止 `open(f,'wb').write(open(f,'rb').read()...)`：写模式会**先截断**，参数里的读取拿到空文件（曾把 32 个图标清成 0 字节；靠 git index 才恢复）。
-- ✅ Python 一律用绝对路径：`C:\Users\AIsouler\AppData\Local\Python\pythoncore-3.14-64\python.exe`（脚本内用 `os.environ["TEMP"]`，别写字面 `%TEMP%`）。
+- ✅ Python 使用当前环境实际可用的解释器，不沿用历史机器的绝对路径；脚本内通过 `os.environ["TEMP"]` 获取临时目录，别写字面 `%TEMP%`。
 - ✅ PowerShell 里 `foreach (...) {...} | ...` 会报错，用 `$arr | ForEach-Object {...}`。
 - 仓库 `core.autocrlf=true`：提交时行尾会被规范化（SVG 内容不受影响），别为此改动文件。
 - `Icons/svg` 里 **不要**放进位图；需要位图时放 `Icons/png`。
