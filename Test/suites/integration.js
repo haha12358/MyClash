@@ -67,6 +67,28 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
     h.assertEqual(hkGroup.proxies.filter((x) => x === '🇭🇰 香港 A').length, 1, '地区组内不应出现重复节点');
   });
 
+  // ---------------- 地区归类 ----------------
+  h.section('集成测试 · 地区归类');
+  h.test('台湾节点归类：全量版生成地区组，精简版保留在其他节点', () => {
+    const out = api.main(fx.typicalSubscription());
+    const groups = out['proxy-groups'];
+    const node = '🇹🇼 台湾 01';
+    h.assert(proxyNames(out.proxies).includes(node), '台湾节点应保留');
+    const tw = groupByName(groups, '台湾省');
+    const twAuto = groupByName(groups, '台湾省-自动选择');
+    const other = groupByName(groups, '其他节点');
+    if (meta.full) {
+      h.assert(tw && twAuto, '应生成台湾手动及自动选择组');
+      h.assert(tw.proxies.includes(node) && tw.proxies.includes(twAuto.name), '台湾组应包含节点和自动选择组');
+      h.assertDeep(twAuto.proxies, [node]);
+      h.assert(groupByName(groups, '默认代理').proxies.includes(tw.name), '默认代理应包含台湾组');
+      h.assert(!other || !other.proxies.includes(node), '台湾节点不应归入其他节点');
+    } else {
+      h.assert(!tw && !twAuto, '精简版不应生成台湾组');
+      h.assert(other && other.proxies.includes(node), '精简版台湾节点应归入其他节点');
+    }
+  });
+
   // ---------------- GLOBAL 策略组 ----------------
   h.section('集成测试 · GLOBAL 策略组');
   h.test('GLOBAL 聚合所有策略组', () => {

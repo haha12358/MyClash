@@ -17,13 +17,13 @@
 
 ---
 
-## 当前项目维护约定（2026-10-02）
+## 当前项目维护约定（2026-10-03）
 
 ### 文件与同步范围
 
 - 本仓库为 `haha12358/MyClash`，上游为 `AIsouler/MyClash`。README 下载链接使用本仓库；文件头保留原作者和原链接，图标仍引用上游素材。
 - `Script/Script.js` 对应 `Config/mihomoConfigLite.yaml`；`Script/mihomoScript.js` 对应 `Config/mihomoConfig.yaml`。修改共用逻辑时同步两份脚本及可对应的静态配置，保留全量版额外服务策略。
-- 当前脚本地区仅包含香港、日本、美国、新加坡；台湾地区已移除。测试元数据和断言须保持一致，不得为满足旧测试恢复已移除功能。静态 Config 目前仍保留台湾策略组，不要把它当作脚本地区定义。
+- 两份脚本均包含香港、日本、美国、新加坡；仅全量脚本恢复台湾地区，精简脚本不添加台湾地区。测试元数据和断言须按版本保持一致。两份静态 Config 均保留台湾策略组，不要把它当作精简脚本地区定义。
 - 两个版本均启用娱乐分流、自定义直连和 HaGeZi PRO mini 广告规则。规则顺序为私有网络直连 → HaGeZi → 自定义直连 → 国内直连 → 国外 QUIC 拦截 → 娱乐及其他服务 → 兜底；变更优先级时核对脚本和 YAML。
 - 当前默认全局及 DNS `ipv6: false`，无 `fake-ip-range6`，TUN `strict-route: false`；国外 DNS 走“漏网之鱼”，节点解析使用阿里和腾讯 DoH。具体地址以脚本输出为准，不恢复旧版默认值。
 - 低倍率匹配包含“实验”；直连默认节点名为 `🇨🇳 直连`。订阅 hosts 改写节点 server 时同时设 `udp: true`；动态逻辑不能直接照搬到静态 YAML。
@@ -58,7 +58,7 @@
 | 引用格式                         | `https://raw.githubusercontent.com/AIsouler/MyClash/main/Icons/svg/<Name>.svg`；**JS 脚本里前缀已提为 `iconBaseUrl`**，写成 `` `${iconBaseUrl}<Name>.svg` ``；YAML 不支持变量，仍写全量                                                                       |
 | 引用位置 | 两份 Script 与两份 Config；以文件实际引用为准 |
 | 规则集引用 | 脚本用 `ruleSetBaseUrl`（`https://raw.githubusercontent.com/appshubcc/bett-rules/meta/geo/`）；独立来源见当前维护约定，`path-in-bundle` 为包内路径 |
-| 回归测试                         | `node Test/run-tests.js`（改过脚本必跑，当前 192 项；含 ES2020 语法检查与 QuickJS 实跑 `main()`）                                                                                                                                                          |
+| 回归测试                         | `node Test/run-tests.js`（改过脚本必跑，当前 194 项；含 ES2020 语法检查与 QuickJS 实跑 `main()`）                                                                                                                                                          |
 
 ---
 
