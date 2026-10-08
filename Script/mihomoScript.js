@@ -1302,10 +1302,10 @@ const commonDnsRegex = new RegExp(
 );
 
 // 国内外 DNS 定义
-const chinaDNS = ['223.5.5.5#DIRECT', '119.29.29.29#DIRECT'];
+const chinaDNS = ['223.5.5.5', '119.29.29.29'];
 const foreignDNS = ['https://dns.google/dns-query#漏网之鱼', 'https://cloudflare-dns.com/dns-query#漏网之鱼'];
-const defaultDNS = ['223.5.5.5#DIRECT', '119.29.29.29#DIRECT'];
-const proxyServerDNS = ['https://dns.alidns.com/dns-query#DIRECT', 'https://doh.pub/dns-query#DIRECT'];
+const defaultDNS = ['223.5.5.5', '119.29.29.29'];
+const proxyServerDNS = ['https://dns.alidns.com/dns-query', 'https://doh.pub/dns-query'];
 
 /**
  * hosts 匹配优先级：精确 > +. > . > *（同级按出现顺序）

@@ -71,10 +71,10 @@ profile:
 
 # 国内外 DNS 定义
 dns_common:
-  chinaDNS: &chinaDNS ['223.5.5.5#DIRECT', '119.29.29.29#DIRECT']
+  chinaDNS: &chinaDNS ['223.5.5.5', '119.29.29.29']
   foreignDNS: &foreignDNS ['https://dns.google/dns-query#漏网之鱼', 'https://cloudflare-dns.com/dns-query#漏网之鱼']
-  defaultDNS: &defaultDNS ['223.5.5.5#DIRECT', '119.29.29.29#DIRECT']
-  proxyServerDNS: &proxyServerDNS ['https://dns.alidns.com/dns-query#DIRECT', 'https://doh.pub/dns-query#DIRECT']
+  defaultDNS: &defaultDNS ['223.5.5.5', '119.29.29.29']
+  proxyServerDNS: &proxyServerDNS ['https://dns.alidns.com/dns-query', 'https://doh.pub/dns-query']
 
 dns:
   enable: true
