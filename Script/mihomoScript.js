@@ -67,7 +67,7 @@ const prefixRules = [
   'RULE-SET,private,直连',
 
   // 自定义
-  'RULE-SET,hagezi,AdBlock',
+  'RULE-SET,AdBlock,AdBlock',
   'RULE-SET,direct,直连',
 
   // 国内直连
@@ -782,11 +782,11 @@ const serviceConfigs = [
     baseOption: selectBaseOption,
     reject: true,
     providers: {
-      hagezi: {
+      AdBlock: {
         ...ruleProviderCommonDomain,
-        url: 'https://raw.githubusercontent.com/haha12358/MyClash/main/Rules/hagezi-pro.mini.mrs',
-        path: './ruleset/hagezi.mrs',
-        'path-in-bundle': 'geo/geosite/category-ads-all.mrs',
+        url: 'https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Clash.mrs',
+        path: './ruleset/AdBlock.mrs',
+        'path-in-bundle': 'geo/geosite/category-ads.mrs',
       },
     },
     icon: `${iconBaseUrl}AdBlock.svg`,
@@ -1683,8 +1683,8 @@ function main(config) {
   newConfig['rule-providers'] = finalRuleProviders;
 
   newConfig['rules'] = [
-    // AdBlock 关闭或处于极简模式时不生成 HaGeZi 规则，保留其他前置规则的顺序
-    ...prefixRules.filter((rule) => rule !== 'RULE-SET,hagezi,AdBlock' || finalRuleProviders.hagezi),
+    // AdBlock 关闭或处于极简模式时不生成广告规则，保留其他前置规则的顺序
+    ...prefixRules.filter((rule) => rule !== 'RULE-SET,AdBlock,AdBlock' || finalRuleProviders.AdBlock),
     ...(ruleOptionsEnable.屏蔽国外QUIC ? blockForeignQuic : []),
     ...functionalRules,
 

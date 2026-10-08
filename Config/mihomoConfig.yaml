@@ -362,11 +362,11 @@ rule-providers:
 
   # --- 其他规则集 ---
 
-  hagezi:
+  AdBlock:
     <<: *rule_providers_domain
-    url: 'https://raw.githubusercontent.com/haha12358/MyClash/main/Rules/hagezi-pro.mini.mrs'
-    path: './ruleset/hagezi.mrs'
-    path-in-bundle: 'geo/geosite/category-ads-all.mrs'
+    url: 'https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Clash.mrs'
+    path: './ruleset/AdBlock.mrs'
+    path-in-bundle: 'geo/geosite/category-ads.mrs'
   fakeip_filter:
     <<: *rule_providers_domain
     url: 'https://raw.githubusercontent.com/appshubcc/bett-rules/meta/geo/geosite/fakeip-filter.mrs'
@@ -711,7 +711,7 @@ rules:
   - RULE-SET,private,直连
 
   # 自定义
-  - RULE-SET,hagezi,AdBlock
+  - RULE-SET,AdBlock,AdBlock
   - RULE-SET,direct,直连
 
   # 国内直连
