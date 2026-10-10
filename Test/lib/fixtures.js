@@ -66,7 +66,7 @@ function typicalSubscription() {
         cipher: 'aes-256-gcm',
         password: 'x',
       },
-      // --- 台湾（仅全量版匹配地区）---
+      // --- 台湾（两个版本均匹配地区）---
       { name: '🇹🇼 台湾 01', type: 'vmess', server: 'tw1.example.com', port: 443, uuid: 'z', alterId: 0 },
       // --- 低倍率节点 ---
       { name: '日本 0.3x 流量', type: 'ss', server: '1.2.3.7', port: 443, cipher: 'aes-256-gcm', password: 'x' },

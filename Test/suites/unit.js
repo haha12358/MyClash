@@ -39,9 +39,9 @@ function runUnitTests(h, api, meta) {
   h.test('JAPAN-02 → 日本', () => h.assert(matched('JAPAN-02').includes('日本')));
   h.test('US-LosAngeles-02 → 美国', () => h.assert(matched('US-LosAngeles-02').includes('美国')));
   h.test('SG 01 | 新加坡 → 新加坡', () => h.assert(matched('SG 01 | 新加坡').includes('新加坡')));
-  h.test(meta.full ? '台湾节点匹配台湾省（全量版）' : '台湾节点不匹配地区（精简版）', () => {
+  h.test('台湾节点匹配台湾地区（两个版本）', () => {
     for (const name of ['台湾 01', '🇹🇼 台湾 01', '台北 01', '高雄 01', 'TW 01', 'TWN 01', 'taiwan 01']) {
-      h.assertDeep(matched(name), meta.full ? ['台湾省'] : []);
+      h.assertDeep(matched(name), ['台湾']);
     }
   });
   h.test('日本 0.3x 流量 → 低倍率节点 + 日本', () => {
